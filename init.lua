@@ -104,6 +104,7 @@ end, { noremap = true, expr = true })
 vim.keymap.set("i", "{", function()
 	return smart_close_pair("{")
 end, { noremap = true, expr = true })
+
 -- ----------------------------------------------------------------------------- --
 
 local ensure_packer = function()
@@ -121,7 +122,7 @@ local packer_bootstrap = ensure_packer()
 
 -- start packer
 require("packer").startup(function(use)
-	-- plugin manager
+	-- PLUGIN MANAGER
 	use("wbthomason/packer.nvim")
 
 	-- Automatically set up config after cloning Packer
@@ -129,7 +130,7 @@ require("packer").startup(function(use)
 		require("packer").sync()
 	end
 
-	-- plugins
+	-- PLUGINS
 	use({
 		"nvim-telescope/telescope.nvim",
 		tag = "0.1.8",
@@ -159,12 +160,12 @@ require("packer").startup(function(use)
 			"hrsh7th/cmp-path", -- File paths
 		},
 	})
-	-- themes
+	-- THEMES
 	use("catppuccin/nvim")
 	use("Mofiqul/vscode.nvim")
 	use("rebelot/kanagawa.nvim")
 
-	-- formmater
+	-- FORMMATER
 	use({
 		"stevearc/conform.nvim",
 		config = function()
@@ -202,7 +203,7 @@ require("packer").startup(function(use)
 	})
 end)
 
---set up and configure plugins
+-- SET UP AND CONFIGURE PLUGINS
 require("nvim-web-devicons").setup({ default = true })
 
 require("lualine").setup({ options = { theme = current_theme, icons_enabled = true } })
@@ -239,7 +240,7 @@ vim.diagnostic.config({
 	signs = true,
 })
 
--- LSP config
+-- LSP CONFIG
 require("mason").setup()
 local mason_lspconfig = require("mason-lspconfig")
 mason_lspconfig.setup({
@@ -250,15 +251,15 @@ mason_lspconfig.setup({
 local lspconfig = require("lspconfig")
 mason_lspconfig.setup_handlers({
 
-	-- sets up all servers with generic default settings
+	-- sets up all servers with default settings
 	function(server_name)
 		lspconfig[server_name].setup({
 			capabilities = require("cmp_nvim_lsp").default_capabilities(),
 		})
 	end,
 
-	-- specific settings for specific lsp servers
-	-- lua
+	-- SPECIFIC SETTINGS FOR SPECIFIC LSP SERVERS
+	-- LUA
 	["lua_ls"] = function()
 		lspconfig.lua_ls.setup({
 			settings = {
@@ -277,7 +278,7 @@ mason_lspconfig.setup_handlers({
 		})
 	end,
 
-	-- c/c++
+	-- C/C++
 	["clangd"] = function()
 		lspconfig.clangd.setup({
 			capabilities = require("cmp_nvim_lsp").default_capabilities(),
@@ -290,7 +291,7 @@ mason_lspconfig.setup_handlers({
 		})
 	end,
 
-	-- python
+	-- PYTHON
 	["pyright"] = function()
 		lspconfig.pyright.setup({
 			settings = {
