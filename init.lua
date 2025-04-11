@@ -3,6 +3,7 @@
 
 local current_theme = "kanagawa"
 local enable_lsp = false
+local enable_format_on_save = false
 
 vim.cmd.colorscheme(current_theme)
 vim.opt.number = true
@@ -313,12 +314,17 @@ conform_f.setup({
 		typescriptreact = { "prettier" }, -- TSX support
 	},
 
-	format_on_save = {
-		timeout_ms = 2500,
-		lsp_fallback = true, -- Use LSP if no formatter defined
-	},
+	format_on_save = function()
+		if enable_format_on_save then
+			return {
+				timeout_ms = 2500,
+				lsp_fallback = true, -- Use LSP if no formatter defined
+			}
+		end
+		return
+	end,
 
-	-- formatter options
+	-- FORMATTER OPTIONS
 	formatters = {
 		black = {
 			args = { "--line-length=88", "--quiet" }, -- Black's default config
