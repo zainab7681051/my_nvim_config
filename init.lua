@@ -2,15 +2,15 @@
 -- find and replace: in command mode ":%s/old-text/new-text/g". 'g' for instant replace 'gc' confirmation and '%' can be replace with range of lines ("1,100/old-text/new-text/g"), varients can also be used ("1,100/(old, Old, OLD)/(new, New, NEW)/g")
 
 local current_theme = "kanagawa"
-local enable_lsp = false
+local enable_lsp = true
 local enable_format_on_save = false
 
 vim.cmd.colorscheme(current_theme)
 vim.opt.number = true
 -- vim.opt.relativenumber = true
 vim.opt.syntax = "enable"
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 
 vim.opt.mouse = "a"
@@ -26,8 +26,8 @@ vim.o.shellxquote = ""
 -- KEYMAPS
 
 vim.keymap.set("n", "<leader>w", ":w<CR>", { noremap = true }) -- save file
-vim.keymap.set("n", "<leader>q", ":wq<CR>", { noremap = true }) -- save and exit
-vim.keymap.set("n", "<leader>x", ":q!<CR>", { noremap = true }) -- exit without save
+vim.keymap.set("n", "<leader>x", ":wq<CR>", { noremap = true }) -- save and exit
+vim.keymap.set("n", "<leader>q", ":q!<CR>", { noremap = true }) -- exit without save
 
 vim.keymap.set("n", "<leader><leader>", ":", { noremap = true }) -- enter cmd mode
 
@@ -170,7 +170,6 @@ require("packer").startup(function(use)
 	-- FORMMATER
 	use({
 		"stevearc/conform.nvim",
-		config = function() end,
 	})
 end)
 
@@ -302,27 +301,25 @@ cmp.setup({
 
 -- FORMATTING
 local conform_f = require("conform")
+local function check_format_on_save()
+	if enable_format_on_save then
+		return {
+			timeout_ms = 2500,
+			lsp_fallback = true, -- Use LSP if no formatter defined
+		}
+	end
+	return nil
+end
+
 conform_f.setup({
 	formatters_by_ft = {
 		lua = { "stylua" },
 		c = { "clang_format" },
 		cpp = { "clang_format" },
 		python = { "black", "isort" }, -- isort for import sorting
-		javascript = { "prettier" },
-		typescript = { "prettier" }, -- TypeScript support
-		javascriptreact = { "prettier" }, -- JSX support
-		typescriptreact = { "prettier" }, -- TSX support
 	},
 
-	format_on_save = function()
-		if enable_format_on_save then
-			return {
-				timeout_ms = 2500,
-				lsp_fallback = true, -- Use LSP if no formatter defined
-			}
-		end
-		return
-	end,
+	format_on_save = check_format_on_save(),
 
 	-- FORMATTER OPTIONS
 	formatters = {
@@ -332,23 +329,21 @@ conform_f.setup({
 		clang_format = {
 			args = { "--style=file:./.clang-format" }, -- Use project config
 		},
-		prettier = {
-			args = { "--single-quote", "--jsx-single-quote" },
-		},
 	},
 })
 
--- Code navigation mappings
+-- FORMAT
+vim.keymap.set({ "n", "v" }, "<leader>f", function()
+	conform_f.format({
+		async = true,
+		timeout_ms = 2500,
+		lsp_fallback = true,
+	})
+end, { desc = "Format file or range (visual mode)" })
+
+-- CODE NAVIGATION MAPPINGS
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
 vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "Find references" })
 vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Hover documentation" })
 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol" })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code actions" })
-
--- format
-vim.keymap.set({ "n", "v" }, "<leader>f", function()
-	conform_f.format({
-		async = true,
-		timeout_ms = 2500,
-	})
-end, { desc = "Format file or range (visual mode)" })
