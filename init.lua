@@ -2,6 +2,7 @@
 -- find and replace: in command mode ":%s/old-text/new-text/g". 'g' for instant replace 'gc' confirmation and '%' can be replace with range of lines ("1,100/old-text/new-text/g"), varients can also be used ("1,100/(old, Old, OLD)/(new, New, NEW)/g")
 
 local current_theme = "kanagawa"
+local enable_lsp = false
 
 vim.cmd.colorscheme(current_theme)
 vim.opt.number = true
@@ -168,38 +169,7 @@ require("packer").startup(function(use)
 	-- FORMMATER
 	use({
 		"stevearc/conform.nvim",
-		config = function()
-			require("conform").setup({
-				formatters_by_ft = {
-					lua = { "stylua" },
-					c = { "clang_format" },
-					cpp = { "clang_format" },
-					python = { "black", "isort" }, -- isort for import sorting
-					javascript = { "prettier" },
-					typescript = { "prettier" }, -- TypeScript support
-					javascriptreact = { "prettier" }, -- JSX support
-					typescriptreact = { "prettier" }, -- TSX support
-				},
-
-				format_on_save = {
-					timeout_ms = 2500,
-					lsp_fallback = true, -- Use LSP if no formatter defined
-				},
-
-				-- formatter options
-				formatters = {
-					black = {
-						args = { "--line-length=88", "--quiet" }, -- Black's default config
-					},
-					clang_format = {
-						args = { "--style=file:./.clang-format" }, -- Use project config
-					},
-					prettier = {
-						args = { "--single-quote", "--jsx-single-quote" },
-					},
-				},
-			})
-		end,
+		config = function() end,
 	})
 end)
 
@@ -240,77 +210,80 @@ vim.diagnostic.config({
 	signs = true,
 })
 
--- LSP CONFIG
 require("mason").setup()
-local mason_lspconfig = require("mason-lspconfig")
-mason_lspconfig.setup({
-	ensure_installed = { "lua_ls", "clangd", "pyright", "ts_ls" },
-	automatic_installation = true,
-})
 
-local lspconfig = require("lspconfig")
-mason_lspconfig.setup_handlers({
+-- LSP CONFIG
+if enable_lsp then
+	local mason_lspconfig = require("mason-lspconfig")
+	mason_lspconfig.setup({
+		ensure_installed = { "lua_ls", "clangd", "pyright", "ts_ls" },
+		automatic_installation = true,
+	})
 
-	-- sets up all servers with default settings
-	function(server_name)
-		lspconfig[server_name].setup({
-			capabilities = require("cmp_nvim_lsp").default_capabilities(),
-		})
-	end,
+	local lspconfig = require("lspconfig")
+	mason_lspconfig.setup_handlers({
 
-	-- SPECIFIC SETTINGS FOR SPECIFIC LSP SERVERS
-	-- LUA
-	["lua_ls"] = function()
-		lspconfig.lua_ls.setup({
-			settings = {
-				Lua = {
-					runtime = { version = "LuaJIT" },
-					diagnostics = { globals = { "vim" } },
-					workspace = {
-						library = {
-							vim.env.VIMRUNTIME,
+		-- sets up all servers with default settings
+		function(server_name)
+			lspconfig[server_name].setup({
+				capabilities = require("cmp_nvim_lsp").default_capabilities(),
+			})
+		end,
+
+		-- SPECIFIC SETTINGS FOR SPECIFIC LSP SERVERS
+		-- LUA
+		["lua_ls"] = function()
+			lspconfig.lua_ls.setup({
+				settings = {
+					Lua = {
+						runtime = { version = "LuaJIT" },
+						diagnostics = { globals = { "vim" } },
+						workspace = {
+							library = {
+								vim.env.VIMRUNTIME,
+							},
+							checkThirdParty = false,
 						},
-						checkThirdParty = false,
-					},
-					telemetry = { enable = false },
-				},
-			},
-		})
-	end,
-
-	-- C/C++
-	["clangd"] = function()
-		lspconfig.clangd.setup({
-			capabilities = require("cmp_nvim_lsp").default_capabilities(),
-			cmd = {
-				"clangd",
-				"--background-index",
-				"--clang-tidy",
-				"--header-insertion=never",
-			},
-		})
-	end,
-
-	-- PYTHON
-	["pyright"] = function()
-		lspconfig.pyright.setup({
-			settings = {
-				python = {
-					analysis = {
-						typeCheckingMode = "basic",
-						autoSearchPaths = true,
-						useLibraryCodeForTypes = true,
+						telemetry = { enable = false },
 					},
 				},
-			},
-			before_init = function(_, config)
-				config.settings.python.pythonPath = "~/.venv/bin/python"
-			end,
-		})
-	end,
-})
+			})
+		end,
 
--- Autocomplete setup
+		-- C/C++
+		["clangd"] = function()
+			lspconfig.clangd.setup({
+				capabilities = require("cmp_nvim_lsp").default_capabilities(),
+				cmd = {
+					"clangd",
+					"--background-index",
+					"--clang-tidy",
+					"--header-insertion=never",
+				},
+			})
+		end,
+
+		-- PYTHON
+		["pyright"] = function()
+			lspconfig.pyright.setup({
+				settings = {
+					python = {
+						analysis = {
+							typeCheckingMode = "basic",
+							autoSearchPaths = true,
+							useLibraryCodeForTypes = true,
+						},
+					},
+				},
+				before_init = function(_, config)
+					config.settings.python.pythonPath = "~/.venv/bin/python"
+				end,
+			})
+		end,
+	})
+end
+
+-- AUTOCOMPLETE SETUP
 local cmp = require("cmp")
 cmp.setup({
 	sources = {
@@ -325,6 +298,40 @@ cmp.setup({
 		["<S-Tab>"] = cmp.mapping.select_prev_item(),
 	},
 })
+
+-- FORMATTING
+local conform_f = require("conform")
+conform_f.setup({
+	formatters_by_ft = {
+		lua = { "stylua" },
+		c = { "clang_format" },
+		cpp = { "clang_format" },
+		python = { "black", "isort" }, -- isort for import sorting
+		javascript = { "prettier" },
+		typescript = { "prettier" }, -- TypeScript support
+		javascriptreact = { "prettier" }, -- JSX support
+		typescriptreact = { "prettier" }, -- TSX support
+	},
+
+	format_on_save = {
+		timeout_ms = 2500,
+		lsp_fallback = true, -- Use LSP if no formatter defined
+	},
+
+	-- formatter options
+	formatters = {
+		black = {
+			args = { "--line-length=88", "--quiet" }, -- Black's default config
+		},
+		clang_format = {
+			args = { "--style=file:./.clang-format" }, -- Use project config
+		},
+		prettier = {
+			args = { "--single-quote", "--jsx-single-quote" },
+		},
+	},
+})
+
 -- Code navigation mappings
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
 vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "Find references" })
@@ -334,9 +341,8 @@ vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action
 
 -- format
 vim.keymap.set({ "n", "v" }, "<leader>f", function()
-	require("conform").format({
+	conform_f.format({
 		async = true,
-		lsp_fallback = true, -- Fall back to LSP formatting
 		timeout_ms = 2500,
 	})
 end, { desc = "Format file or range (visual mode)" })
