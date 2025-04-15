@@ -17,8 +17,8 @@ vim.opt.mouse = "a"
 
 vim.g.mapleader = " "
 
--- Set PowerShell as the default shell
-vim.o.shell = "powershell.exe"
+-- SET POWERSHELL AS THE DEFAULT SHELL
+vim.o.shell = "pwsh.exe"
 vim.o.shellcmdflag = "-NoLogo -ExecutionPolicy RemoteSigned -Command"
 vim.o.shellquote = ""
 vim.o.shellxquote = ""
@@ -188,6 +188,8 @@ require("nvim-tree").setup({
 	renderer = {
 		group_empty = true,
 	},
+	-- SHOWS IGNORED FILES
+	git = { enable = true, ignore = false, timeout = 2500 },
 })
 vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", {})
 
