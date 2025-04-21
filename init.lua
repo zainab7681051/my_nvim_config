@@ -122,12 +122,12 @@ end
 
 local packer_bootstrap = ensure_packer()
 
--- start packer
+-- START PACKER
 require("packer").startup(function(use)
 	-- PLUGIN MANAGER
 	use("wbthomason/packer.nvim")
 
-	-- Automatically set up config after cloning Packer
+	-- AUTOMATICALLY SET UP CONFIG AFTER CLONING PACKER
 	if packer_bootstrap then
 		require("packer").sync()
 	end
@@ -148,6 +148,9 @@ require("packer").startup(function(use)
 		"nvim-lualine/lualine.nvim",
 		requires = { "nvim-tree/nvim-web-devicons", opt = true },
 	})
+
+	use("lewis6991/gitsigns.nvim")
+	use("romgrk/barbar.nvim")
 
 	--LSP
 	use("williamboman/mason.nvim")
@@ -183,7 +186,7 @@ require("nvim-tree").setup({
 		sorter = "case_sensitive",
 	},
 	view = {
-		width = 30,
+		width = 20,
 	},
 	renderer = {
 		group_empty = true,
@@ -193,7 +196,7 @@ require("nvim-tree").setup({
 })
 vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", {})
 
-require("telescope").setup({})
+require("telescope").setup()
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope find files" })
 vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope live grep" })
@@ -349,3 +352,67 @@ vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "Find references" })
 vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Hover documentation" })
 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename symbol" })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code actions" })
+
+-- BARBAR TABS BAR SETUP & MAPPINGS
+vim.g.barbar_auto_setup = false
+
+require("barbar").setup({
+	tabpages = true,
+	clickable = true,
+})
+
+-- Move to previous/next
+vim.keymap.set("n", "<A-,>", "<Cmd>BufferPrevious<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-.>", "<Cmd>BufferNext<CR>", { noremap = true, silent = true })
+
+-- Re-order to previous/next
+vim.keymap.set("n", "<A-<>", "<Cmd>BufferMovePrevious<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A->>", "<Cmd>BufferMoveNext<CR>", { noremap = true, silent = true })
+
+-- Goto buffer in position...
+vim.keymap.set("n", "<A-1>", "<Cmd>BufferGoto 1<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-2>", "<Cmd>BufferGoto 2<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-3>", "<Cmd>BufferGoto 3<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-4>", "<Cmd>BufferGoto 4<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-5>", "<Cmd>BufferGoto 5<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-6>", "<Cmd>BufferGoto 6<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-7>", "<Cmd>BufferGoto 7<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-8>", "<Cmd>BufferGoto 8<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-9>", "<Cmd>BufferGoto 9<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<A-0>", "<Cmd>BufferLast<CR>", { noremap = true, silent = true })
+
+-- Pin/unpin buffer
+vim.keymap.set("n", "<A-p>", "<Cmd>BufferPin<CR>", { noremap = true, silent = true })
+
+-- Goto pinned/unpinned buffer
+--:BufferGotoPinned
+--:BufferGotoUnpinned
+
+-- Close buffer
+vim.keymap.set("n", "<A-c>", "<cmd>BufferClose<cr>", { noremap = true, silent = true })
+
+-- Wipeout buffer
+--:BufferWipeout
+-- Close commands
+--:BufferCloseAllButCurrent
+vim.keymap.set("n", "<A-a>", "<cmd>BufferCloseAllButCurrent<cr>", { noremap = true, silent = true })
+--:BufferCloseAllButPinned
+--:BufferCloseAllButCurrentOrPinned
+--:BufferCloseBuffersLeft
+--:BufferCloseBuffersRight
+
+-- Magic buffer-picking mode
+vim.keymap.set("n", "<C-p>", "<Cmd>BufferPick<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<C-s-p>", "<Cmd>BufferPickDelete<CR>", { noremap = true, silent = true })
+
+-- Sort automatically by...
+vim.keymap.set("n", "<Space>bb", "<Cmd>BufferOrderByBufferNumber<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Space>bn", "<Cmd>BufferOrderByName<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Space>bd", "<Cmd>BufferOrderByDirectory<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Space>bl", "<Cmd>BufferOrderByLanguage<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<Space>bw", "<Cmd>BufferOrderByWindowNumber<CR>", { noremap = true, silent = true })
+
+-- Other:
+--:BarbarEnable - enables barbar (enabled by default)
+--:BarbarDisable - very bad command, should never be used
+----------------------------------
