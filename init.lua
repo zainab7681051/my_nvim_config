@@ -2,8 +2,11 @@
 -- find and replace: in command mode ":%s/old-text/new-text/g". 'g' for instant replace 'gc' confirmation and '%' can be replace with range of lines ("1,100/old-text/new-text/g"), varients can also be used ("1,100/(old, Old, OLD)/(new, New, NEW)/g")
 
 local current_theme = "catppuccin-mocha"
-local enable_lsp = true
+local enable_lsp = false
 local enable_format_on_save = false
+local setup_tabs = false
+local enable_formatters = false
+local default_shell = "pwsh.exe"
 
 vim.cmd.colorscheme(current_theme)
 vim.opt.number = true
@@ -17,14 +20,10 @@ vim.opt.mouse = "a"
 
 vim.g.mapleader = " "
 
--- SET POWERSHELL AS THE DEFAULT SHELL
-vim.o.shell = "pwsh.exe"
-vim.o.shellcmdflag = "-NoLogo -ExecutionPolicy RemoteSigned -Command"
-vim.o.shellquote = ""
-vim.o.shellxquote = ""
+-- SET DEFAULT SHELL
+vim.o.shell = default_shell
 
 -- KEYMAPS
-
 vim.keymap.set("n", "<leader>w", ":w<CR>", { noremap = true }) -- save file
 vim.keymap.set("n", "<leader>x", ":wq<CR>", { noremap = true }) -- save and exit
 vim.keymap.set("n", "<leader>q", ":q!<CR>", { noremap = true }) -- exit without save
@@ -319,22 +318,12 @@ end
 conform_f.setup({
 	formatters_by_ft = {
 		lua = { "stylua" },
-		c = { "clang_format" },
-		cpp = { "clang_format" },
-		python = { "black", "isort" }, -- isort for import sorting
 	},
 
 	format_on_save = check_format_on_save(),
 
 	-- FORMATTER OPTIONS
-	formatters = {
-		black = {
-			args = { "--line-length=88", "--quiet" }, -- Black's default config
-		},
-		clang_format = {
-			args = { "--style=file:./.clang-format" }, -- Use project config
-		},
-	},
+	formatters = {},
 })
 
 -- FORMAT
@@ -355,64 +344,65 @@ vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action
 
 -- BARBAR TABS BAR SETUP & MAPPINGS
 vim.g.barbar_auto_setup = false
+if setup_tabs then
+	require("barbar").setup({
+		tabpages = true,
+		clickable = true,
+	})
 
-require("barbar").setup({
-	tabpages = true,
-	clickable = true,
-})
+	-- Move to previous/next
+	vim.keymap.set("n", "<A-,>", "<Cmd>BufferPrevious<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-.>", "<Cmd>BufferNext<CR>", { noremap = true, silent = true })
 
--- Move to previous/next
-vim.keymap.set("n", "<A-,>", "<Cmd>BufferPrevious<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-.>", "<Cmd>BufferNext<CR>", { noremap = true, silent = true })
+	-- Re-order to previous/next
+	vim.keymap.set("n", "<A-<>", "<Cmd>BufferMovePrevious<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A->>", "<Cmd>BufferMoveNext<CR>", { noremap = true, silent = true })
 
--- Re-order to previous/next
-vim.keymap.set("n", "<A-<>", "<Cmd>BufferMovePrevious<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A->>", "<Cmd>BufferMoveNext<CR>", { noremap = true, silent = true })
+	-- Goto buffer in position...
+	vim.keymap.set("n", "<A-1>", "<Cmd>BufferGoto 1<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-2>", "<Cmd>BufferGoto 2<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-3>", "<Cmd>BufferGoto 3<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-4>", "<Cmd>BufferGoto 4<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-5>", "<Cmd>BufferGoto 5<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-6>", "<Cmd>BufferGoto 6<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-7>", "<Cmd>BufferGoto 7<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-8>", "<Cmd>BufferGoto 8<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-9>", "<Cmd>BufferGoto 9<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<A-0>", "<Cmd>BufferLast<CR>", { noremap = true, silent = true })
 
--- Goto buffer in position...
-vim.keymap.set("n", "<A-1>", "<Cmd>BufferGoto 1<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-2>", "<Cmd>BufferGoto 2<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-3>", "<Cmd>BufferGoto 3<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-4>", "<Cmd>BufferGoto 4<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-5>", "<Cmd>BufferGoto 5<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-6>", "<Cmd>BufferGoto 6<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-7>", "<Cmd>BufferGoto 7<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-8>", "<Cmd>BufferGoto 8<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-9>", "<Cmd>BufferGoto 9<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<A-0>", "<Cmd>BufferLast<CR>", { noremap = true, silent = true })
+	-- Pin/unpin buffer
+	vim.keymap.set("n", "<A-p>", "<Cmd>BufferPin<CR>", { noremap = true, silent = true })
 
--- Pin/unpin buffer
-vim.keymap.set("n", "<A-p>", "<Cmd>BufferPin<CR>", { noremap = true, silent = true })
+	-- Goto pinned/unpinned buffer
+	--:BufferGotoPinned
+	--:BufferGotoUnpinned
 
--- Goto pinned/unpinned buffer
---:BufferGotoPinned
---:BufferGotoUnpinned
+	-- Close buffer
+	vim.keymap.set("n", "<A-c>", "<cmd>BufferClose<cr>", { noremap = true, silent = true })
 
--- Close buffer
-vim.keymap.set("n", "<A-c>", "<cmd>BufferClose<cr>", { noremap = true, silent = true })
+	-- Wipeout buffer
+	--:BufferWipeout
+	-- Close commands
+	--:BufferCloseAllButCurrent
+	vim.keymap.set("n", "<A-a>", "<cmd>BufferCloseAllButCurrent<cr>", { noremap = true, silent = true })
+	--:BufferCloseAllButPinned
+	--:BufferCloseAllButCurrentOrPinned
+	--:BufferCloseBuffersLeft
+	--:BufferCloseBuffersRight
 
--- Wipeout buffer
---:BufferWipeout
--- Close commands
---:BufferCloseAllButCurrent
-vim.keymap.set("n", "<A-a>", "<cmd>BufferCloseAllButCurrent<cr>", { noremap = true, silent = true })
---:BufferCloseAllButPinned
---:BufferCloseAllButCurrentOrPinned
---:BufferCloseBuffersLeft
---:BufferCloseBuffersRight
+	-- Magic buffer-picking mode
+	vim.keymap.set("n", "<C-p>", "<Cmd>BufferPick<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<C-s-p>", "<Cmd>BufferPickDelete<CR>", { noremap = true, silent = true })
 
--- Magic buffer-picking mode
-vim.keymap.set("n", "<C-p>", "<Cmd>BufferPick<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<C-s-p>", "<Cmd>BufferPickDelete<CR>", { noremap = true, silent = true })
+	-- Sort automatically by...
+	vim.keymap.set("n", "<Space>bb", "<Cmd>BufferOrderByBufferNumber<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<Space>bn", "<Cmd>BufferOrderByName<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<Space>bd", "<Cmd>BufferOrderByDirectory<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<Space>bl", "<Cmd>BufferOrderByLanguage<CR>", { noremap = true, silent = true })
+	vim.keymap.set("n", "<Space>bw", "<Cmd>BufferOrderByWindowNumber<CR>", { noremap = true, silent = true })
 
--- Sort automatically by...
-vim.keymap.set("n", "<Space>bb", "<Cmd>BufferOrderByBufferNumber<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<Space>bn", "<Cmd>BufferOrderByName<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<Space>bd", "<Cmd>BufferOrderByDirectory<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<Space>bl", "<Cmd>BufferOrderByLanguage<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<Space>bw", "<Cmd>BufferOrderByWindowNumber<CR>", { noremap = true, silent = true })
-
--- Other:
---:BarbarEnable - enables barbar (enabled by default)
---:BarbarDisable - very bad command, should never be used
-----------------------------------
+	-- Other:
+	--:BarbarEnable - enables barbar (enabled by default)
+	--:BarbarDisable - very bad command, should never be used
+end
+---------------------------------
