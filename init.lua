@@ -1,6 +1,3 @@
--- find: in command mode :?text and text will be highlighted
--- find and replace: in command mode ":%s/old-text/new-text/g". 'g' for instant replace 'gc' confirmation and '%' can be replace with range of lines ("1,100/old-text/new-text/g"), varients can also be used ("1,100/(old, Old, OLD)/(new, New, NEW)/g")
-
 local current_theme = "catppuccin-mocha"
 local enable_lsp = false
 local enable_format_on_save = false
